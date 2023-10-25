@@ -16,7 +16,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     # -- (Optional) When using Cloudflare as Cert Resolver
     environment:
-      - CF_DNS_API_TOKEN=<<REPLACE>>
+      - CF_DNS_API_TOKEN=<<REPLACE-CF_DNS_API_TOKEN>>
     # -- (Option´al) When using a custom network
     networks:
       - frontend

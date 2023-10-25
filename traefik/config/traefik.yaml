@@ -41,7 +41,7 @@ entryPoints:
 certificatesResolvers:
   #staging:
   #  acme:
-  #    email: <<REPLACE>>
+  #    email: <<REPLACE-email>>
   #    storage: /etc/traefik/certs/acme.json
   #    caServer: "https://acme-staging-v02.api.letsencrypt.org/directory"
   #    #-- (Optional) Remove this section, when using DNS Challenge
@@ -55,7 +55,7 @@ certificatesResolvers:
   #        - "8.8.8.8:53"
   production:
     acme:
-      email: <<REPLACE>>
+      email: <<REPLACE-email>>
       storage: /etc/traefik/certs/acme.json
       caServer: "https://acme-v02.api.letsencrypt.org/directory"
       #-- (Optional) Remove this section, when using DNS Challenge
