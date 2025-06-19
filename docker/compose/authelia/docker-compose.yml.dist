@@ -1,0 +1,58 @@
+services:
+  authelia:
+    image: ghcr.io/authelia/authelia:4.39.4
+    container_name: authelia
+    volumes:
+      - $DOCKERDIR/appdata/authelia/config:/config
+      - $DOCKERDIR/logs/authelia/:/log
+    ports:
+      - 9091:9091
+    security_opt:
+      - no-new-privileges:true
+    environment:
+      - PUID=$PUID
+      - PGID=$PGID
+      - TZ=$TZ
+    depends_on:
+      redis:
+        condition: service_healthy
+    restart: unless-stopped
+    healthcheck:
+      disable: true
+    labels:
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.authelia.entrypoints=websecure"
+      - "traefik.http.routers.authelia.rule=(Host(`$OVERWRITEHOST`))"
+      - "traefik.http.routers.authelia.tls=true"
+      - "traefik.http.routers.authelia.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=t3_proxy"
+      ## Middlewares
+      - "traefik.http.routers.authelia.middlewares=chain-no-auth@file"
+      ## HTTP Services
+      - "traefik.http.routers.authelia.service=authelia"
+      - "traefik.http.services.authelia.loadbalancer.server.port=9091"
+    networks:
+      - t3_proxy
+
+  redis:
+    container_name: redis
+    image: valkey/valkey:8-alpine
+    restart: unless-stopped
+    volumes:
+      - $DOCKERDIR/appdata/authelia/redis:/data
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETGID
+      - SETUID
+      - DAC_OVERRIDE
+      - CHOWN
+    healthcheck:
+      test: ["CMD", "valkey-server", "--version"]
+      interval: 10s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+    networks:
+      - t3_proxy

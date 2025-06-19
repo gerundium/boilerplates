@@ -1,0 +1,39 @@
+services:
+  # Flame - Application Dashboard
+  flame:
+    image: pawelmalak/flame:2.3.1
+    container_name: flame
+    security_opt:
+      - no-new-privileges:true
+    restart: unless-stopped
+    # In case you would like to start only specific groups
+    #+ profiles: ["apps", "all"]
+    networks:
+      - t3_proxy
+    ports:
+      - $FLAME_PORT:5005
+    volumes:
+      - $DOCKERDIR/appdata/flame:/app/data
+      - /var/run/docker.sock:/var/run/docker.sock # optional but required for Docker integration
+    environment:
+      - PASSWORD=$FLAME_PASSWORD # optional but required for (1)
+      - DOCKER_HOST
+    labels:
+      # Traefik Labels
+      - "traefik.enable=true"
+      ## HTTP Routers
+      - "traefik.http.routers.flame.entrypoints=websecure"
+      - "traefik.http.routers.flame.rule=(Host(`$OVERWRITEHOST`))"
+      - "traefik.http.routers.flame.tls=true"
+      - "traefik.http.routers.flame.tls.certresolver=letsencrypt"
+      - "traefik.docker.network=t3_proxy"
+      ## HTTP Services
+      - "traefik.http.routers.flame.service=flame"
+      - "traefik.http.services.flame.loadbalancer.server.port=5005"
+      ## Flame Labels
+      - flame.type=application
+      - flame.name=flame
+      - flame.url=${OVERWRITEHOST}
+      - flame.icon=docker
+      ## Middlewares
+      - "traefik.http.routers.flame.middlewares=chain-authelia@file"

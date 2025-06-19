@@ -1,0 +1,52 @@
+---
+services:
+  traefik:
+    image: traefik:v3.4.1
+    container_name: traefik
+    restart: unless-stopped
+    command:
+      - "--global.sendAnonymousUsage=false"
+      - "--global.checkNewVersion=false"
+      - "--log.level=INFO"
+      - "--log.filePath=/logs/traefik.log"
+      - "--api.insecure=false"
+      - "--api.dashboard=true"
+      - "--providers.docker=true"
+      - "--providers.docker.exposedByDefault=false"
+      - "--entrypoints.web.address=:80"
+      - "--entrypoints.web.http.redirections.entrypoint.to=websecure"
+      - "--entrypoints.web.http.redirections.entrypoint.scheme=https"
+      - "--entrypoints.websecure.address=:443"
+      - "--entrypoints.websecure.http.tls.domains[0].main=${HOSTNAME}.${DOMAINNAME}"
+      - "--entrypoints.websecure.http.tls.domains[0].sans=*.${HOSTNAME}.${DOMAINNAME}"
+      - "--entrypoints.websecure.http.tls.certResolver=letsencrypt"
+      # Set up LetsEncrypt
+      - "--certificatesresolvers.letsencrypt.acme.email=${CLOUDFLARE_EMAIL}"
+      - "--certificatesresolvers.letsencrypt.acme.storage=/letsencrypt/acme.json"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.provider=cloudflare"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge=true"
+      - "--certificatesresolvers.letsencrypt.acme.dnschallenge.resolvers=1.1.1.1:53,8.8.8.8:53"
+      # Dynamic configuration
+      - --providers.file.directory=/rules # Load dynamic configuration from one or more .toml or .yml files in a directory
+      - --providers.file.watch=true # Only works on top level files in the rules folder
+    ports:
+      - "80:80"
+      - "443:443"
+      - "8080:8080"
+    volumes:
+      - $DOCKERDIR/appdata/traefik3/certs:/letsencrypt
+      - $DOCKERDIR/appdata/traefik3/rules/$HOSTNAME:/rules # Dynamic File Provider directory
+      - $DOCKERDIR/logs/traefik3:/logs
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      - "CLOUDFLARE_EMAIL=${CLOUDFLARE_EMAIL}"
+      - "CLOUDFLARE_DNS_API_TOKEN=${CLOUDFLARE_DNS_API_TOKEN}"
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.traefik.rule=Host(`${TRAEFIK_FQDN}`)
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik.service=api@internal
+    networks:
+      - t3_proxy

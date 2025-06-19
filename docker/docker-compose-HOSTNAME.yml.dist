@@ -1,0 +1,27 @@
+########################### NETWORKS
+networks:
+  default:
+    driver: bridge
+  ### Example
+  #socket_proxy:
+  #  name: socket_proxy
+  #  driver: bridge
+  #  ipam:
+  #    config:
+  #      - subnet: 192.168.91.0/24
+  ### Example
+  #t3_proxy:
+  #  name: t3_proxy
+  #  driver: bridge
+  #  ipam:
+  #    config:
+  #      - subnet: 192.168.90.0/24
+
+include:
+  ### Example
+  ## DISABLED
+  ## CORE
+  #- compose/traefik3/docker-compose.yml
+  #- compose/authelia/docker-compose.yml
+  ## APPS
+  #- compose/flame/docker-compose.yml

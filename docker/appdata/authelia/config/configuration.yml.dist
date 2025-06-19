@@ -1,0 +1,69 @@
+---
+theme: dark
+server:
+  address: tcp://0.0.0.0:9091
+  endpoints:
+    authz:
+      forward-auth:
+        implementation: ForwardAuth
+    enable_pprof: false
+    enable_expvars: false
+  disable_healthcheck: false
+  tls:
+    key: ""
+    certificate: ""
+
+identity_validation:
+  reset_password:
+    jwt_secret: REPLACE
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+totp:
+  issuer: REPLACE # update this as per your domain
+  period: 30
+
+access_control:
+  default_policy: deny
+  rules:
+    - domain: 'REPLACE'
+      #policy: bypass
+      #policy: one_factor
+      policy: two_factor
+
+session:
+  secret: REPLACE
+  redis:
+    host: 'redis'
+    port: 6379
+
+  cookies:
+    - name: authelia_session
+      domain: "REPLACE"
+      authelia_url: "https://REPLACE"
+      expiration: 1h # 1 hour
+      inactivity: 10m # 10 minutes
+      remember_me: 1M # 1 month
+      default_redirection_url: "https://REPLACE"
+
+regulation:
+  max_retries: 3
+  find_time: 2m
+  ban_time: 5m
+
+storage:
+  encryption_key: REPLACE
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  filesystem:
+    filename: /config/notification.txt
+
+log:
+  level: debug
+  format: text
+  file_path: /log/authelia.log
+  keep_stdout: true

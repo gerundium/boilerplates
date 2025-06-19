@@ -1,0 +1,10 @@
+---
+users:
+  example:
+    disabled: false
+    displayname: 'example' # update this as per your name
+    password: ''
+    email: example@domain.local # update this as per your email
+    groups:
+      - admins
+      - dev
